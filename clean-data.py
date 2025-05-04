@@ -51,7 +51,6 @@ query_attributes = [
     "platforms_windows",
     "platforms_mac",
     "platforms_linux",
-    "metacritic_score",
     "categories",
     "genres",
     "recommendations_total",
@@ -60,6 +59,7 @@ query_attributes = [
 ]
 
 info_attributes = [
+    "metacritic_score",
     "short_description",
     "detailed_description",
     "about_the_game",
@@ -89,6 +89,12 @@ info_attributes = [
 # Subset the dataframe to include only necessary columns
 df_subset = df[[*query_attributes, *info_attributes]]
 
+# Select rows that have type game
+df_subset = df_subset[df_subset["type"] == "game"]
+
+# Select rows that have more than 500 recommendations
+df_subset = df_subset[df_subset["recommendations_total"] > 500]
+
 # Convert genres to a list of genres
 df_subset.loc[:, "genres"] = df_subset["genres"].apply(
     lambda x: [genre.strip() for genre in x.split(",")] if pd.notna(x) else []
@@ -104,11 +110,6 @@ df_subset.loc[:, "supported_languages"] = df_subset["supported_languages"].apply
     parse_languages
 )
 df_subset = df_subset[df_subset["supported_languages"].apply(lambda x: len(x) > 0)]
-
-# Select rows where metacritic_score is a valid number
-df_subset = df_subset[
-    pd.to_numeric(df_subset["metacritic_score"], errors="coerce").notna()
-]
 
 # Total games
 total_games = len(df_subset)
