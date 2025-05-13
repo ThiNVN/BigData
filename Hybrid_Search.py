@@ -233,9 +233,9 @@ def filter_elastic(self,filters,use_cluster=True):
 
     # Language Filter
     if filters.get("language"):
-      query["query"]["bool"]["must"].append({
-        "term": {
-            "supported_languages.keyword": [filters["language"]]
+        query["query"]["bool"]["must"].append({
+            "terms": {
+                "supported_languages.keyword": filters["language"]
         }
     })
 

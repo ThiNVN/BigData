@@ -176,11 +176,11 @@ llm_response = LLMResponse(api_key)
 # result = llm_response.get_function_call("I want to play Counter-Strike 2")
 # print("Direct Search Result:", result)
 
-# # Test filter search
-# result = llm_response.get_function_call("Show me free single-player racing games from 2022 that support English")
-# print("Filter Search Result:", result)
+# Test filter search
+result = llm_response.get_function_call("I want to play a single-player racing game with high end graphics that from support French")
+print("Filter Search Result:", result)
 
-# # Test chit chat
+# Test chit chat
 # result = llm_response.get_function_call("Hello, how are you?")
 # print("Chit Chat Result:", result)
 
