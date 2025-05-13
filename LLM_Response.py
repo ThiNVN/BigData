@@ -9,98 +9,98 @@ genai_client =genai.Client(api_key=api_key)
 class LLMResponse:
     def __init__(self, gemini_api_key):
         self.client = genai.Client(api_key=gemini_api_key)
-
     def get_function_call(self,user_query):
-        function_calling=[
+        function_calling = [
             {
-             "name": "direct_search",
-                    "description": "Direct search for games name, publisher, or developer",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "game_name": {
-                                "type": "string",
-                                "description": "Game name that user is looking for, None if not applicable"
-                            },
-                            "publisher": {
-                                "type": "string",
-                                "description": "Publisher name that user is looking for, None if not applicable"
-                            },
-                            "developer": {
-                                "type": "string",
-                                "description": "Developer name that user is looking for, None if not applicable"
-                            }
-                        },
-                        "required": []
-                    }
-                },
-                {
-                "name": "filter_search",
-                        "description": "Search games based on description and apply filters like year range, price, cluster of games, age, platform, currency extracted from user query",
-                        "parameters": {
-                            "type": "object",
-                            "properties": {
-                                "game_description": {
-                                    "type": "string",
-                                    "description": "Game description from user query (e.g., football tactical game)"
-                                },
-                                "year_range": {
-                                    "type": "string",
-                                    "description": "Year range for the game release (e.g., 2010-2020) or specific year (e.g., 2015),None if not applicable"
-                                },
-                                "price_limit": {
-                                    "type": "string",
-                                    "description": "Price limit for the game (e.g., 0 for free games, 20 for games under $20),None if not applicable"
-                                },
-                                "cluster": {
-                                    "type": "string",
-                                    "description": "Choose one of these cluster that relevant to the user query: 'action', 'adventure', 'casual', 'strategy', 'simulation', 'sports', 'rpg', 'puzzle', 'indie', 'multiplayer', 'shooter', 'racing', 'horror', 'platformer', 'open-world'."
-                                },
-                                "language": {
-                                    "type": "string",
-                                    "description": "Language supported for the game (e.g., English,..),None if not applicable"
-                                },
-                                "platform": {
-                                    "type": "string",
-                                    "description": "Platform for the game (e.g., Windows, Mac, Linux),None if not applicable"
-                                },
-                                "currency": {
-                                    "type": "string",
-                                    "description": "Currency for the game price (e.g., USD, VND), None if not applicable"
-                                }
-                            },
-                            "required": ["game_description"]
+                "name": "direct_search",
+                "description": "Direct search for games name, publisher, or developer based on user query",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "game_name": {
+                            "type": "string",
+                            "description": "Game name that user is looking for, None if not applicable"
                         }
-                },
-                {
-                    "name": "chit_chat",
-                    "description": "Chit chat message of users",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "User input message that is common chit-chat"
-                            }
+                    },
+                    "required": []
+                }
+            },
+            {
+                "name": "filter_search",
+                "description": "Search games based on description and apply filters like year range, price, cluster of games, age, platform, currency extracted from user query. IMPORTANT: Always try to match the game description to the most appropriate cluster number (0-14) based on the game features mentioned.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "game_description": {
+                            "type": "string",
+                            "description": "Game description from user query (e.g., football tactical game)"
                         },
-                        "required": ["query"]
-                    }
-                },
-                {
-                    "name": "end_chat",
-                    "description": "End chat session",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "query": {
-                                "type": "string",
-                                "description": "End the chat session and further information if needed"
-                            }
+                        "developer": {
+                            "type": "string",
+                            "description": "Developer name from user if mentioned,None if not applicable"
                         },
-                        "required": ["query"]
-                    }
+                        "publisher": {
+                            "type": "string",
+                            "description": "Publisher name from user if mentioned,None if not applicable"
+                        },
+                        "year_range": {
+                            "type": "string",
+                            "description": "Current year is 2025. E.g 'from 2022' then return the year range for the game release '2022-2025' or 'from 2022 to 2024' then return '2022-2024' or a specific year if mentioned '2022' ,None if not applicable"
+                        },
+                        "price_limit": {
+                            "type": "string",
+                            "description": "Price limit for the game (e.g., 0 for free games, 20 for games under $20),None if not applicable"
+                        },
+                        "cluster": {
+                            "type": "string",
+                            "description": "IMPORTANT: Select the most appropriate cluster numbers (0-14) based on the game features mentioned if relevant, None if not applicable. Examples: For 'single-player adventure game' use cluster 0, For 'multiplayer racing game' use cluster 1, For 'video production game' use cluster 8. Cluster: 0-Single-player & Adventure & Indie, 1-Multi-player & Single-player & Racing & Steam Timeline & Video Production, 2-Steam Timeline & Multi-player & Single-player & Video Production, 3-Single-player & Design & Illustration & Sports & Racing, 4-Multi-player & Video Production & Single-player, 5-Multi-player & Valve Anti-Cheat enabled & Video Production & Steam Timeline & Racing & Single-player, 6-Single-player & Design & Illustration & Animation & Modeling, 7-Single-player & Multi-player & Valve Anti-Cheat enabled & MMO, 8-Video Production & Single-player, 9-Multi-player & Sports & Valve Anti-Cheat enabled & Racing & Single-player, 10-Multi-player & Single-player & Animation & Modeling, 11-Single-player & Gore, 12-Single-player & Racing & Sports, 13-Video Production & Single-player, 14-Video Production & Racing & Single-player"
+                        },
+                        "language": {
+                            "type": "string",
+                            "description": "Language supported for the game (e.g., English,..),None if not applicable"
+                        },
+                        "platform": {
+                            "type": "string",
+                            "description": "Platform for the game (e.g., Windows, Mac, Linux),None if not applicable"
+                        },
+                        "currency": {
+                            "type": "string",
+                            "description": "Currency for the game price (e.g., USD, VND), None if not applicable"
+                        }
+                    },
+                    "required": ["game_description"]
+                }
+            },
+            {
+                "name": "chit_chat",
+                "description": "Chit chat message of users",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "User input message that is common chit-chat"
+                        }
+                    },
+                    "required": ["query"]
+                }
+            },
+            {
+                "name": "end_chat",
+                "description": "End chat session",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "End the chat session and further information if needed"
+                        }
+                    },
+                    "required": ["query"]
+                }
             }
         ]
+        
         tools = types.Tool(function_declarations=function_calling)
         config = types.GenerateContentConfig(tools=[tools])
 
@@ -119,17 +119,18 @@ class LLMResponse:
                 result={
                     "function_name": function_call.name,
                     "game_name": function_call.args.get("game_name"),
-                    "publisher": function_call.args.get("publisher"),
-                    "developer": function_call.args.get("developer")
                 }
                 return result
             elif function_call.name=="filter_search":
                 result={
                     "function_name": function_call.name,
                     "game_description": function_call.args.get("game_description"),
+                    "developer": function_call.args.get("developer"),
+                    "publisher": function_call.args.get("publisher"),
                     "year_range": function_call.args.get("year_range"),
                     "price_limit": function_call.args.get("price_limit"),
                     "cluster": function_call.args.get("cluster"),
+                    "language": function_call.args.get("language"),
                     "platform": function_call.args.get("platform"),
                     "currency": function_call.args.get("currency")
                 }
@@ -172,9 +173,19 @@ class LLMResponse:
         )
         return response.text
 llm_response = LLMResponse(api_key)
-user_query = "I want to play game developed by Valve"
-# new_prompt="and prohibited for under 13"
-# reflect = llm_response.get_reflection(user_query,new_prompt)
-# print(reflect)
-result = llm_response.get_function_call(user_query)
-print(result)
+# result = llm_response.get_function_call("I want to play Counter-Strike 2")
+# print("Direct Search Result:", result)
+
+# # Test filter search
+# result = llm_response.get_function_call("Show me free single-player racing games from 2022 that support English")
+# print("Filter Search Result:", result)
+
+# # Test chit chat
+# result = llm_response.get_function_call("Hello, how are you?")
+# print("Chit Chat Result:", result)
+
+# # Test reflection
+# query_history = ["I want to play a racing game", "that's free"]
+# new_query = "and supports multiplayer"
+# reflected_query = llm_response.get_reflection(query_history, new_query)
+# print("Reflected Query:", reflected_query)
