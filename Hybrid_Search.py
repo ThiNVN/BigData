@@ -1,18 +1,26 @@
 from elasticsearch import Elasticsearch
-from sentence_transformers import SentenceTransformer
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import json
+import requests
 
 class HybridSearch:
-    def __init__(self, es_url="https://4ca02f04fab74e44a2ab8c97bfec0bd0.asia-southeast1.gcp.elastic-cloud.com:443",es_api_key="T2VwanhaWUJDZGNLQUpCV1FSQXA6cGtVNDVybFduVFdmRzA5dFNKTElRUQ==", model_name="all-MiniLM-L6-v2"):
+    def __init__(self, es_url="https://4ca02f04fab74e44a2ab8c97bfec0bd0.asia-southeast1.gcp.elastic-cloud.com:443",
+                 es_api_key="T2VwanhaWUJDZGNLQUpCV1FSQXA6cGtVNDVybFduVFdmRzA5dFNKTElRUQ==",
+                 api_url="http://localhost:8000"):
         self.es = Elasticsearch(es_url,api_key=es_api_key)
-        self.model = SentenceTransformer(model_name)
+        self.api_url = api_url
         self.index_name="games"
 
     # --- Vector Encoder ---
     def encode_query(self,text):
-        return self.model.encode(text).tolist()
+        try:
+            response = requests.post(f"{self.api_url}/encode", json={"text": text})
+            response.raise_for_status()  # Raise an exception for bad status codes
+            return response.json()["embedding"]
+        except Exception as e:
+            print(f"Error encoding query: {str(e)}")
+            raise
 
     # --- Search Functions ---
     def search_bm25(self,query_text, size=100, filtered_ids=None):
