@@ -1,5 +1,6 @@
 from pyngrok import ngrok
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import nest_asyncio
 import uvicorn
@@ -20,6 +21,13 @@ llm_response = LLMResponse(api_key)
 ngrok.set_auth_token(ngrok_authtoken)
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
