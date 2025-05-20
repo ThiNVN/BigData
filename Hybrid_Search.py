@@ -151,7 +151,7 @@ class HybridSearch:
         return json.dumps(results, ensure_ascii=False)
 
     # --- Optional Filter Function ---
-    def filter_elastic(self, filters, use_cluster=True):
+    def filter_elastic(self, filters):
         query = {"query": {"bool": {"must": []}}}
 
         # Year Range Filter
@@ -200,12 +200,6 @@ class HybridSearch:
                 }
             })
 
-        # Cluster Filter
-        if use_cluster and filters.get("cluster"):
-            query["query"]["bool"]["must"].append(
-                {"term": {"cluster": filters["cluster"]}}
-            )
-
         # Platform Filter (windows/mac/linux)
         if filters.get("platform"):
             platform_field = f"platforms_{filters['platform'].lower()}"
@@ -250,7 +244,7 @@ class HybridSearch:
             name = results.get("name")
             return self.direct_elastic(name)
         elif func_name == "filter_search":
-            result_filter = self.filter_elastic(results, use_cluster=True)
+            result_filter = self.filter_elastic(results)
             if not result_filter:
                 return json.dumps(
                     {
@@ -258,15 +252,6 @@ class HybridSearch:
                     },
                     ensure_ascii=False,
                 )
-            if len(result_filter) < 5:
-                result_filter = self.filter_elastic(results, use_cluster=False)
-                if not result_filter:
-                    return json.dumps(
-                        {
-                            "message": "No games matched your filters. Try adjusting your search criteria."
-                        },
-                        ensure_ascii=False,
-                    )
             query_text = results.get("game_description")
             return self.hybrid_search(query_text, filtered_ids=result_filter)
         else:

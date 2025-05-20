@@ -51,10 +51,6 @@ class LLMResponse:
                             "type": "string",
                             "description": "Price limit for the game (e.g., 0 for free games, 20 for games under $20),None if not applicable"
                         },
-                        "cluster": {
-                            "type": "string",
-                            "description": "IMPORTANT: Select the most appropriate cluster numbers (0-14) based on the game features mentioned if relevant, None if not applicable. Examples: For 'single-player adventure game' use cluster 0, For 'multiplayer racing game' use cluster 1, For 'video production game' use cluster 8. Cluster: 0-Single-player & Adventure & Indie, 1-Multi-player & Single-player & Racing & Steam Timeline & Video Production, 2-Steam Timeline & Multi-player & Single-player & Video Production, 3-Single-player & Design & Illustration & Sports & Racing, 4-Multi-player & Video Production & Single-player, 5-Multi-player & Valve Anti-Cheat enabled & Video Production & Steam Timeline & Racing & Single-player, 6-Single-player & Design & Illustration & Animation & Modeling, 7-Single-player & Multi-player & Valve Anti-Cheat enabled & MMO, 8-Video Production & Single-player, 9-Multi-player & Sports & Valve Anti-Cheat enabled & Racing & Single-player, 10-Multi-player & Single-player & Animation & Modeling, 11-Single-player & Gore, 12-Single-player & Racing & Sports, 13-Video Production & Single-player, 14-Video Production & Racing & Single-player"
-                        },
                         "genre": {
                             "type": "string",
                             "description": "Genre of the game (e.g., Action, Adventure, Simulation, etc.),None if not applicable"
@@ -137,7 +133,6 @@ class LLMResponse:
                     "publisher": function_call.args.get("publisher"),
                     "year_range": function_call.args.get("year_range"),
                     "price_limit": function_call.args.get("price_limit"),
-                    "cluster": function_call.args.get("cluster"),
                     "genre": function_call.args.get("genre"),   
                     "category": function_call.args.get("category"),
                     "language": function_call.args.get("language"),
