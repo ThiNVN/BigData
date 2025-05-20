@@ -55,6 +55,14 @@ class LLMResponse:
                             "type": "string",
                             "description": "IMPORTANT: Select the most appropriate cluster numbers (0-14) based on the game features mentioned if relevant, None if not applicable. Examples: For 'single-player adventure game' use cluster 0, For 'multiplayer racing game' use cluster 1, For 'video production game' use cluster 8. Cluster: 0-Single-player & Adventure & Indie, 1-Multi-player & Single-player & Racing & Steam Timeline & Video Production, 2-Steam Timeline & Multi-player & Single-player & Video Production, 3-Single-player & Design & Illustration & Sports & Racing, 4-Multi-player & Video Production & Single-player, 5-Multi-player & Valve Anti-Cheat enabled & Video Production & Steam Timeline & Racing & Single-player, 6-Single-player & Design & Illustration & Animation & Modeling, 7-Single-player & Multi-player & Valve Anti-Cheat enabled & MMO, 8-Video Production & Single-player, 9-Multi-player & Sports & Valve Anti-Cheat enabled & Racing & Single-player, 10-Multi-player & Single-player & Animation & Modeling, 11-Single-player & Gore, 12-Single-player & Racing & Sports, 13-Video Production & Single-player, 14-Video Production & Racing & Single-player"
                         },
+                        "genre": {
+                            "type": "string",
+                            "description": "Genre of the game (e.g., Action, Adventure, Simulation, etc.),None if not applicable"
+                        },
+                         "category": {
+                            "type": "string",
+                            "description": "Category of the game (e.g., Multiplayer, Single-player, etc.),None if not applicable"
+                        },
                         "language": {
                             "type": "string",
                             "description": "Language supported for the game (e.g., English,..),None if not applicable"
@@ -130,6 +138,8 @@ class LLMResponse:
                     "year_range": function_call.args.get("year_range"),
                     "price_limit": function_call.args.get("price_limit"),
                     "cluster": function_call.args.get("cluster"),
+                    "genre": function_call.args.get("genre"),   
+                    "category": function_call.args.get("category"),
                     "language": function_call.args.get("language"),
                     "platform": function_call.args.get("platform"),
                     "currency": function_call.args.get("currency")
@@ -172,20 +182,3 @@ class LLMResponse:
             contents=prompt
         )
         return response.text
-# llm_response = LLMResponse(api_key)
-# # result = llm_response.get_function_call("I want to play Counter-Strike 2")
-# # print("Direct Search Result:", result)
-
-# # Test filter search
-# result = llm_response.get_function_call("I want to play a single-player racing game with high end graphics that from support French")
-# print("Filter Search Result:", result)
-
-# Test chit chat
-# result = llm_response.get_function_call("Hello, how are you?")
-# print("Chit Chat Result:", result)
-
-# # Test reflection
-# query_history = ["I want to play a racing game", "that's free"]
-# new_query = "and supports multiplayer"
-# reflected_query = llm_response.get_reflection(query_history, new_query)
-# print("Reflected Query:", reflected_query)

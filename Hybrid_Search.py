@@ -187,12 +187,18 @@ class HybridSearch:
             query["query"]["bool"]["must"].append(
                 {"term": {"publishers": filters["publisher"]}}
             )
-
-        # Game Description (full-text search)
-        if filters.get("game_description"):
-            query["query"]["bool"]["must"].append(
-                {"match": {"detailed_description": filters["game_description"]}}
-            )
+        if filters.get("genre"):
+            query["query"]["bool"]["must"].append({
+                "match": {
+                    "genres": filters["genre"]
+                }
+            })
+        if filters.get("category"):
+            query["query"]["bool"]["must"].append({
+                "match": {
+                    "categories": filters["category"]
+                }
+            })
 
         # Cluster Filter
         if use_cluster and filters.get("cluster"):
