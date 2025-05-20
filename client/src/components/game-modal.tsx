@@ -20,7 +20,13 @@ const GameModal = ({ action, open, onClose }: GameModalProps) => {
           position: "relative",
         }}
       >
-        <img src={game.header_image} alt={game.name} style={{ width: "100%" }} />
+        <img
+          src={
+            game.header_image.includes("https") ? game.header_image : `https://placehold.co/400x188?text=${game.name}`
+          }
+          alt={game.name}
+          style={{ width: "100%" }}
+        />
         <IconButton
           onClick={onClose}
           sx={{

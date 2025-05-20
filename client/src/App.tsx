@@ -19,6 +19,8 @@ import axiosClient from "./libs/axiosClient";
 import type { GameActionProps, GameProps, GameResponseProps } from "./types/game";
 import { getColorForString } from "./types/colors";
 import GameModal from "./components/game-modal";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const App = () => {
   const [text, setText] = useState<string>("");
@@ -36,6 +38,10 @@ const App = () => {
       });
       setGames(games);
     } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const { response } = error;
+        toast.error(response?.data.detail);
+      }
       console.log("Error: ", error);
     } finally {
       setLoading(false);
@@ -196,7 +202,15 @@ const App = () => {
                   position: "relative",
                 }}
               >
-                <CardMedia component="img" image={game.header_image} alt={game.name} />
+                <CardMedia
+                  component="img"
+                  image={
+                    game.header_image.includes("https")
+                      ? game.header_image
+                      : `https://placehold.co/400x188?text=${game.name}`
+                  }
+                  alt={game.name}
+                />
                 {!!game.website && (
                   <Link
                     sx={{
