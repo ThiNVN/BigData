@@ -83,7 +83,7 @@ class HybridSearch:
         return dict(zip(ids, normalized))
 
     # --- Combine Scores ---
-    def combine_scores(self, bm25_scores, vec_scores, weight_bm25=0.5, weight_vec=0.5):
+    def combine_scores(self, bm25_scores, vec_scores, weight_bm25=0.7, weight_vec=0.3):
         if not bm25_scores and not vec_scores:
             return {}
 
@@ -134,7 +134,20 @@ class HybridSearch:
 
     # --- Direct Search by Name ---
     def direct_elastic(self, name):
-        query = {"query": {"term": {"name.raw": name}}}
+        # Using match query with fuzziness for more flexible name matching
+        query = {
+            "query": {
+                "match": {
+                    "name": {
+                        "query": name,
+                        "fuzziness": "AUTO",  # Automatically adjust fuzziness based on term length
+                        "prefix_length": 2,    # First 2 characters must match exactly
+                        "operator": "or"       # Match any of the terms
+                    }
+                }
+            },
+            "size": 10  # Limit results to top 10 matches
+        }
 
         res = self.es.search(index=self.index_name, body=query)
 
@@ -146,15 +159,23 @@ class HybridSearch:
                 for k, v in source.items()
                 if k not in ["cluster", "description_vector"]
             }
+            # Add relevance score to the result
+            filtered_source["relevance_score"] = round(hit["_score"], 2)
             results.append(filtered_source)
 
         return json.dumps(results, ensure_ascii=False)
 
     # --- Optional Filter Function ---
     def filter_elastic(self, filters):
-        query = {"query": {"bool": {"must": []}}}
+        query = {
+            "query": {
+                "bool": {
+                    "must": []
+                }
+            }
+        }
 
-        # Year Range Filter
+        # Year Range Filter (keep as is since it's a range query)
         if filters.get("year_range"):
             year_range = filters["year_range"]
             if isinstance(year_range, str) and "-" in year_range:
@@ -165,75 +186,107 @@ class HybridSearch:
             else:
                 start_year = end_year = int(year_range)
 
-            query["query"]["bool"]["must"].append(
-                {
-                    "range": {
-                        "release_date": {
-                            "gte": f"{start_year}-01-01",
-                            "lte": f"{end_year}-12-31",
-                        }
+            query["query"]["bool"]["must"].append({
+                "range": {
+                    "release_date": {
+                        "gte": f"{start_year}-01-01",
+                        "lte": f"{end_year}-12-31"
                     }
                 }
-            )
+            })
 
-        # Developer Filter
+        # Developer Filter - Changed back to term for exact match
         if filters.get("developer"):
-            query["query"]["bool"]["must"].append(
-                {"term": {"developers": filters["developer"]}}
-            )
+            query["query"]["bool"]["must"].append({
+                "term": {
+                    "developers.keyword": filters["developer"]  # Using .keyword for exact match
+                }
+            })
 
-        # Publisher Filter
+        # Publisher Filter - Changed back to term for exact match
         if filters.get("publisher"):
-            query["query"]["bool"]["must"].append(
-                {"term": {"publishers": filters["publisher"]}}
-            )
-        if filters.get("genre"):
             query["query"]["bool"]["must"].append({
-                "match": {
-                    "genres": filters["genre"]
-                }
-            })
-        if filters.get("category"):
-            query["query"]["bool"]["must"].append({
-                "match": {
-                    "categories": filters["category"]
+                "term": {
+                    "publishers.keyword": filters["publisher"]  # Using .keyword for exact match
                 }
             })
 
-        # Platform Filter (windows/mac/linux)
+        # Platform Filter (keep as term since it's a boolean)
         if filters.get("platform"):
             platform_field = f"platforms_{filters['platform'].lower()}"
-            query["query"]["bool"]["must"].append({"term": {platform_field: True}})
+            query["query"]["bool"]["must"].append({
+                "term": {
+                    platform_field: True
+                }
+            })
 
-        # Currency Filter
+        # Currency Filter - Changed to term for exact match
         if filters.get("currency"):
-            query["query"]["bool"]["must"].append(
-                {"term": {"price_currency": filters["currency"]}}
-            )
+            query["query"]["bool"]["must"].append({
+                "term": {
+                    "price_currency.keyword": filters["currency"]  # Using .keyword for exact match
+                }
+            })
 
-        # Price Limit
+        # Price Limit (keep as is since it's a range query)
         if filters.get("price_limit"):
             try:
                 price = float(filters["price_limit"])
-                query["query"]["bool"]["must"].append(
-                    {"range": {"price_final": {"lte": price}}}
-                )
+                query["query"]["bool"]["must"].append({
+                    "range": {
+                        "price_final": {
+                            "lte": price
+                        }
+                    }
+                })
             except ValueError:
                 pass
 
-        # Language Filter
+        # Language Filter - Changed to term for exact match
         if filters.get("language"):
             languages = [lang.strip() for lang in filters["language"].split(",")]
             if len(languages) == 1:
-                query["query"]["bool"]["must"].append(
-                    {"term": {"supported_languages.keyword": languages[0]}}
-                )
+                query["query"]["bool"]["must"].append({
+                    "term": {
+                        "supported_languages.keyword": languages[0]  # Using .keyword for exact match
+                    }
+                })
             else:
-                query["query"]["bool"]["must"].append(
-                    {"terms": {"supported_languages.keyword": languages}}
-                )
+                # For multiple languages, use terms query
+                query["query"]["bool"]["must"].append({
+                    "terms": {
+                        "supported_languages.keyword": languages  # Using .keyword for exact match
+                    }
+                })
+
+        # Genre Filter - Changed to match with fuzziness
+        if filters.get("genre"):
+            query["query"]["bool"]["must"].append({
+                "match": {
+                    "genres": {
+                        "query": filters["genre"],
+                        "fuzziness": "AUTO",
+                        "prefix_length": 2,
+                        "operator": "or"
+                    }
+                }
+            })
+
+        # Category Filter - Changed to match with fuzziness
+        if filters.get("category"):
+            query["query"]["bool"]["must"].append({
+                "match": {
+                    "categories": {
+                        "query": filters["category"],
+                        "fuzziness": "AUTO",
+                        "prefix_length": 2,
+                        "operator": "or"
+                    }
+                }
+            })
 
         query["size"] = 1000
+        print(json.dumps(query, indent=2))
         res = self.es.search(index=self.index_name, body=query)
 
         return [hit["_id"] for hit in res["hits"]["hits"]]
@@ -241,18 +294,28 @@ class HybridSearch:
     def get_games(self, results):
         func_name = results.get("function_name")
         if func_name == "direct_search":
-            name = results.get("name")
+            name = results.get("game_name")
             return self.direct_elastic(name)
         elif func_name == "filter_search":
             result_filter = self.filter_elastic(results)
-            if not result_filter:
-                return json.dumps(
-                    {
-                        "message": "No games matched your filters. Try adjusting your search criteria."
-                    },
-                    ensure_ascii=False,
-                )
-            query_text = results.get("game_description")
-            return self.hybrid_search(query_text, filtered_ids=result_filter)
+            print(result_filter)
+            
+            # If there's a game description, perform hybrid search
+            if results.get("game_description"):
+                query_text = results.get("game_description")
+                return self.hybrid_search(query_text, filtered_ids=result_filter)
+            else:
+                # If no game description, return filtered results directly
+                filtered_results = []
+                for _id in result_filter:
+                    doc = self.es.get(index=self.index_name, id=_id)
+                    source = doc["_source"]
+                    filtered_source = {
+                        k: v for k, v in source.items()
+                        if k not in ["cluster", "description_vector"]
+                    }
+                    filtered_results.append(filtered_source)
+                
+                return json.dumps(filtered_results, indent=2, ensure_ascii=False)
         else:
             return results.get("response")

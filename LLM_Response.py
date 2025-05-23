@@ -33,7 +33,7 @@ class LLMResponse:
                     "properties": {
                         "game_description": {
                             "type": "string",
-                            "description": "Game description from user query (e.g., football tactical game)"
+                            "description": "Game description from user query (e.g., football tactical game), None if not applicable"
                         },
                         "developer": {
                             "type": "string",
@@ -53,11 +53,11 @@ class LLMResponse:
                         },
                         "genre": {
                             "type": "string",
-                            "description": "Genre of the game (e.g., Action, Adventure, Simulation, etc.),None if not applicable"
+                            "description": "Genre of the game if only the genre is mentioned in the user query (e.g., Action, Adventure, Simulation, etc.),None if not applicable"
                         },
                          "category": {
                             "type": "string",
-                            "description": "Category of the game (e.g., Multiplayer, Single-player, etc.),None if not applicable"
+                            "description": "Category of the game if only the category is mentioned in the user query (e.g., Multiplayer, Single-player, etc.),None if not applicable"
                         },
                         "language": {
                             "type": "string",
@@ -72,7 +72,7 @@ class LLMResponse:
                             "description": "Currency for the game price (e.g., USD, VND), None if not applicable"
                         }
                     },
-                    "required": ["game_description"]
+                    "required": []
                 }
             },
             {
