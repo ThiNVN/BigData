@@ -27,7 +27,7 @@ class LLMResponse:
             },
             {
                 "name": "filter_search",
-                "description": "Search games based on description and apply filters like year range, price, cluster of games, age, platform, currency extracted from user query. IMPORTANT: Always try to match the game description to the most appropriate cluster number (0-14) based on the game features mentioned.",
+                "description": "Search games based on description and apply filters like year range, price, cluster of games, age, platform, currency extracted from user query. IMPORTANT: If genres or category is not mentioned, but related, then apply it to game description",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -53,7 +53,7 @@ class LLMResponse:
                         },
                         "genre": {
                             "type": "string",
-                            "description": "Genre of the game if only the genre is mentioned in the user query (e.g., Action, Adventure, Simulation, etc.),None if not applicable"
+                            "description": "Genre of the game if only the genre is mentioned in the user query (e.g., Action, Adventure, Simulation, etc.),If not mentioned, return 'None'"
                         },
                          "category": {
                             "type": "string",
@@ -62,6 +62,10 @@ class LLMResponse:
                         "language": {
                             "type": "string",
                             "description": "Language supported for the game (e.g., English,..),None if not applicable"
+                        },
+                        "age_limit": {
+                            "type": "string",
+                            "description": "Age required for the game (e.g., 0, 13, 17),None if not applicable"
                         },
                         "platform": {
                             "type": "string",
@@ -133,14 +137,16 @@ class LLMResponse:
                     "publisher": function_call.args.get("publisher"),
                     "year_range": function_call.args.get("year_range"),
                     "price_limit": function_call.args.get("price_limit"),
+                    "price_above": function_call.args.get("price_above"),
                     "genre": function_call.args.get("genre"),   
                     "category": function_call.args.get("category"),
                     "language": function_call.args.get("language"),
+                    "age_limit": function_call.args.get("age_limit"),
                     "platform": function_call.args.get("platform"),
                     "currency": function_call.args.get("currency")
                 }
                 return result
-            elif function_call.name == "chit-chat":
+            elif function_call.name == "chit_chat":
                 chit_chat_response = self.client.models.generate_content(
                     model="gemini-2.0-flash",
                     contents=function_call.args["query"],
@@ -177,3 +183,4 @@ class LLMResponse:
             contents=prompt
         )
         return response.text
+

@@ -11,8 +11,13 @@ class HybridSearch:
         es_url="https://4ca02f04fab74e44a2ab8c97bfec0bd0.asia-southeast1.gcp.elastic-cloud.com:443",
         es_api_key="T2VwanhaWUJDZGNLQUpCV1FSQXA6cGtVNDVybFduVFdmRzA5dFNKTElRUQ==",
         api_url="http://localhost:8000",
+        ngrok_url=None
     ):
-        self.es = Elasticsearch(es_url, api_key=es_api_key)
+        # If ngrok_url is provided, use it instead of the default es_url
+        if ngrok_url:
+            self.es = Elasticsearch(ngrok_url)
+        else:
+            self.es = Elasticsearch(es_url, api_key=es_api_key)
         self.api_url = api_url
         self.index_name = "games"
 
@@ -174,7 +179,20 @@ class HybridSearch:
                 }
             }
         }
-
+        # Age Limit Filter
+        # Age Limit Filter
+        if filters.get("age_limit"):
+            try:
+                age_limit = float(filters["age_limit"])
+                query["query"]["bool"]["must"].append({
+                    "range": {
+                        "required_age": {
+                            "gte": age_limit
+                        }
+                    }
+                })
+            except ValueError:
+                pass
         # Year Range Filter (keep as is since it's a range query)
         if filters.get("year_range"):
             year_range = filters["year_range"]
@@ -235,13 +253,12 @@ class HybridSearch:
                 query["query"]["bool"]["must"].append({
                     "range": {
                         "price_final": {
-                            "lte": price
+                            "gte": price
                         }
                     }
                 })
             except ValueError:
                 pass
-
         # Language Filter - Changed to term for exact match
         if filters.get("language"):
             languages = [lang.strip() for lang in filters["language"].split(",")]
