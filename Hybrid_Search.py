@@ -322,9 +322,9 @@ class HybridSearch:
                 query_text = results.get("game_description")
                 return self.hybrid_search(query_text, filtered_ids=result_filter)
             else:
-                # If no game description, return filtered results directly
+                # If no game description, return filtered results directly (max 20 games)
                 filtered_results = []
-                for _id in result_filter:
+                for _id in result_filter[:20]:  # Limit to first 20 results
                     doc = self.es.get(index=self.index_name, id=_id)
                     source = doc["_source"]
                     filtered_source = {

@@ -137,7 +137,6 @@ class LLMResponse:
                     "publisher": function_call.args.get("publisher"),
                     "year_range": function_call.args.get("year_range"),
                     "price_limit": function_call.args.get("price_limit"),
-                    "price_above": function_call.args.get("price_above"),
                     "genre": function_call.args.get("genre"),   
                     "category": function_call.args.get("category"),
                     "language": function_call.args.get("language"),
@@ -146,7 +145,7 @@ class LLMResponse:
                     "currency": function_call.args.get("currency")
                 }
                 return result
-            elif function_call.name == "chit_chat":
+            elif function_call.name == "chit-chat":
                 chit_chat_response = self.client.models.generate_content(
                     model="gemini-2.0-flash",
                     contents=function_call.args["query"],
